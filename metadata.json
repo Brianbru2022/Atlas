@@ -1,0 +1,6 @@
+{
+  "name": "Atles",
+  "description": "YouTube channel coordinator and video package exporter for the AI Eurovision Song Contest. Draft balanced country lineups using performance buckets, generate custom artist records, high-concept lyrics, sound specifications, cover arts, and simulate scoreboard voting sequences.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
