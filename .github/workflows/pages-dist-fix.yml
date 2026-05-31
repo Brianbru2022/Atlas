@@ -21,26 +21,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Unzip uploaded app and patch GitHub Pages paths
+      - name: Extract source app
         run: |
           set -eux
           ZIP_FILE=$(ls *.zip | head -n 1)
           echo "Using ZIP: $ZIP_FILE"
+          rm -rf extracted app
           unzip -q "$ZIP_FILE" -d extracted
-          echo "Extracted files:"
-          find extracted -maxdepth 3 -type f | head -50
-          DIST_DIR=$(find extracted -type d -name dist | head -n 1)
-          echo "Using dist dir: $DIST_DIR"
+          APP_DIR=$(find extracted -type f -name package.json -exec dirname {} \; | head -n 1)
+          echo "Using app dir: $APP_DIR"
+          cp -R "$APP_DIR" app
+          echo "App files:"
+          find app -maxdepth 3 -type f | sort | head -100
+
+      - name: Patch Vite for GitHub Pages
+        working-directory: app
+        run: |
+          set -eux
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vite.config.ts')
+          text = p.read_text()
+          if "base: '/Atlas/'" not in text:
+              text = text.replace("return {", "return {\n    base: '/Atlas/',", 1)
+          p.write_text(text)
+          idx = Path('index.html')
+          html = idx.read_text()
+          html = html.replace('href="/manifest.webmanifest"', 'href="/Atlas/manifest.webmanifest"')
+          html = html.replace("navigator.serviceWorker.register('/sw.js')", "navigator.serviceWorker.register('/Atlas/sw.js')")
+          idx.write_text(html)
+          PY
+          sed -n '1,80p' vite.config.ts
+          sed -n '1,80p' index.html
+
+      - name: Install and build
+        working-directory: app
+        run: |
+          set -eux
+          npm install
+          npm run build
+
+      - name: Prepare Pages artifact
+        run: |
+          set -eux
           rm -rf _site
           mkdir _site
-          cp -R "$DIST_DIR"/* _site/
+          cp -R app/dist/* _site/
           touch _site/.nojekyll
-          if [ -f _site/index.html ]; then
-            sed -i 's|href="/|href="/Atlas/|g' _site/index.html
-            sed -i 's|src="/|src="/Atlas/|g' _site/index.html
-            sed -i "s|href='/|href='/Atlas/|g" _site/index.html
-            sed -i "s|src='/|src='/Atlas/|g" _site/index.html
-          fi
           echo "Published files:"
           find _site -maxdepth 3 -type f | sort | head -100
           echo "index.html preview:"
