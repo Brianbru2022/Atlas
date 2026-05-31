@@ -1,0 +1,35 @@
+name: Deploy Atlas PWA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip uploaded app
+        run: |
+          ZIP_FILE=$(ls *.zip | head -n 1)
+          echo "Using $ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d extracted
+          DIST_DIR=$(find extracted -type d -name dist | head -n 1)
+          mkdir _site
+          cp -R "$DIST_DIR"/* _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
