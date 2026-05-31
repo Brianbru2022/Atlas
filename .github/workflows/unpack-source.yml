@@ -1,0 +1,64 @@
+name: Unpack Atlas Source
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    if: "!contains(github.event.head_commit.message, 'Unpack real Atlas source')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Unpack uploaded project ZIP into repository root
+        run: |
+          set -eux
+          ZIP_FILE=$(ls *.zip | head -n 1)
+          echo "Using ZIP: $ZIP_FILE"
+          rm -rf extracted
+          unzip -q "$ZIP_FILE" -d extracted
+          APP_DIR=$(find extracted -type f -name package.json -exec dirname {} \; | head -n 1)
+          echo "Found app source: $APP_DIR"
+
+          # Copy real source files/folders to repo root.
+          cp -R "$APP_DIR/src" ./src
+          cp -R "$APP_DIR/public" ./public
+          cp "$APP_DIR/package.json" ./package.json
+          cp "$APP_DIR/package-lock.json" ./package-lock.json
+          cp "$APP_DIR/tsconfig.json" ./tsconfig.json
+          cp "$APP_DIR/index.html" ./index.html
+          cp "$APP_DIR/vite.config.ts" ./vite.config.ts
+          cp "$APP_DIR/README.md" ./README.md
+          cp "$APP_DIR/metadata.json" ./metadata.json
+          cp "$APP_DIR/STATIC_HOSTING_README.md" ./STATIC_HOSTING_README.md
+
+          # Ensure Vite builds correctly for repo-hosted paths, but still works on Netlify.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vite.config.ts')
+          text = p.read_text()
+          if "base:" not in text:
+              text = text.replace("return {", "return {\n    base: process.env.NETLIFY ? '/' : '/Atlas/',", 1)
+          elif "base: '/Atlas/'" in text:
+              text = text.replace("base: '/Atlas/'", "base: process.env.NETLIFY ? '/' : '/Atlas/'")
+          p.write_text(text)
+          PY
+
+          git status --short
+          git add src public package.json package-lock.json tsconfig.json index.html vite.config.ts README.md metadata.json STATIC_HOSTING_README.md
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Unpack real Atlas source"
+          git push
