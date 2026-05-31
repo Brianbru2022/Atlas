@@ -1,0 +1,55 @@
+name: Deploy Atlas PWA Fixed
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip uploaded app and patch GitHub Pages paths
+        run: |
+          set -eux
+          ZIP_FILE=$(ls *.zip | head -n 1)
+          echo "Using ZIP: $ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d extracted
+          echo "Extracted files:"
+          find extracted -maxdepth 3 -type f | head -50
+          DIST_DIR=$(find extracted -type d -name dist | head -n 1)
+          echo "Using dist dir: $DIST_DIR"
+          rm -rf _site
+          mkdir _site
+          cp -R "$DIST_DIR"/* _site/
+          touch _site/.nojekyll
+          if [ -f _site/index.html ]; then
+            sed -i 's|href="/|href="/Atlas/|g' _site/index.html
+            sed -i 's|src="/|src="/Atlas/|g' _site/index.html
+            sed -i "s|href='/|href='/Atlas/|g" _site/index.html
+            sed -i "s|src='/|src='/Atlas/|g" _site/index.html
+          fi
+          echo "Published files:"
+          find _site -maxdepth 3 -type f | sort | head -100
+          echo "index.html preview:"
+          sed -n '1,80p' _site/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
