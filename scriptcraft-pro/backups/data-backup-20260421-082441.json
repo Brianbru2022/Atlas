@@ -1,0 +1,34 @@
+{
+  "projects": [
+    {
+      "id": "8f4b09e4-16f1-4093-a3a1-a2da9c43febb",
+      "name": "Wells Next Sea",
+      "created_at": "2026-04-19T15:12:44.863Z"
+    }
+  ],
+  "styles": [
+    {
+      "id": "969bd902-3727-444c-9cc2-3a7d5a8e5ee1",
+      "name": "Highland Explorer",
+      "description": "Dry, intelligent, observational British narration that treats history as something to quietly unpack rather than dramatically reveal. The tone is understated and slightly amused, often highlighting the contrast between what a place looks like and what it actually was. Humour is subtle and comes from irony, scale, and human behaviour rather than exaggeration. The voice feels like walking alongside someone knowledgeable who doesn’t need to impress you, but inevitably does.",
+      "presentationMode": "voiceover",
+      "targetAudience": "Curious, thoughtful viewers aged 30+, interested in British history, landscapes, and places with depth. People who prefer intelligent storytelling over fast-paced travel content, and who appreciate dry humour, subtle detail, and a sense of discovery rather than being “entertained at.”",
+      "toneNotes": "Understated, observational, and quietly confident. Avoids hype, exaggeration, and tourist clichés. Humour is dry, subtle, and often self-aware, emerging naturally from the subject rather than being forced. Focus on contrast (appearance vs reality), human behaviour, and the unintended consequences of history. Write for speech, not reading — natural phrasing, varied sentence length, and clear rhythm. Never patronising, never overly dramatic.",
+      "pacingNotes": "Measured and conversational. Alternates between flowing explanation and short, deliberate sentences for emphasis. Allows space for ideas to land, with natural pauses for reflection or humour. Builds gradually rather than rushing, with occasional slower moments where scale or significance needs to settle.",
+      "signaturePhrases": [],
+      "avoidPhrases": [
+        "“hidden gem”",
+        "“steeped in history”",
+        "“breathtaking”",
+        "“must-see”",
+        "“you won’t believe”",
+        "“uncover the secrets”",
+        "“journey through time”",
+        "“rich tapestry”",
+        "“nestled in”",
+        "“iconic landmark”"
+      ]
+    }
+  ],
+  "scripts": []
+}
